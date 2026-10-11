@@ -15,6 +15,21 @@
 <link rel="preload" href="fonts/BodoniModa-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/Jost-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
+<!-- hb-analytics: cookieless visit counter (GoatCounter). Records business folder + ?src= (card/email/text...). No cookies, no personal data. -->
+<script data-hb-analytics>
+(function(){
+  try{
+    var p=location.pathname, m=p.match(/\/hallandale\/([^\/]+)/), biz=m?m[1]:(p.split('/')[1]||'root');
+    var q=location.search.match(/[?&]src=([A-Za-z0-9_-]{1,24})/), src=q?q[1].toLowerCase():'web';
+    window.goatcounter={path:'/'+biz+'/'+src, title:biz+' · '+src};
+    if(q&&window.history&&history.replaceState){
+      var s=location.search.replace(/([?&])src=[^&]*&?/,'$1').replace(/[?&]$/,'');
+      history.replaceState(null,'',p+s+location.hash);
+    }
+  }catch(e){}
+})();
+</script>
+<script data-goatcounter="https://hallandale-sites.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <a class="skip" href="#work">Skip to content</a>

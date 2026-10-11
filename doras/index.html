@@ -9,6 +9,21 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%231f1e1c'/%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='40' fill='%23b08d57'%3ED%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="styles.css">
+<!-- hb-analytics: cookieless visit counter (GoatCounter). Records business folder + ?src= (card/email/text...). No cookies, no personal data. -->
+<script data-hb-analytics>
+(function(){
+  try{
+    var p=location.pathname, m=p.match(/\/hallandale\/([^\/]+)/), biz=m?m[1]:(p.split('/')[1]||'root');
+    var q=location.search.match(/[?&]src=([A-Za-z0-9_-]{1,24})/), src=q?q[1].toLowerCase():'web';
+    window.goatcounter={path:'/'+biz+'/'+src, title:biz+' · '+src};
+    if(q&&window.history&&history.replaceState){
+      var s=location.search.replace(/([?&])src=[^&]*&?/,'$1').replace(/[?&]$/,'');
+      history.replaceState(null,'',p+s+location.hash);
+    }
+  }catch(e){}
+})();
+</script>
+<script data-goatcounter="https://hallandale-sites.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <a class="skip" href="#services">Skip to content</a>
