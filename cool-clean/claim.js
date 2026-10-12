@@ -31,7 +31,7 @@
     var navEl = header && header.querySelector('nav');
     var solidBg = function (c) { var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return false; var p = m[1].split(','); return p.length < 4 || parseFloat(p[3]) > 0.35; };
 
-    var rgb = function (c) { var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return null; var p = m[1].split(',').map(parseFloat); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
+    var rgb = function (c) { var hx = c && c.match(/^#([0-9a-f]{6})$/i); if (hx) { var n = parseInt(hx[1], 16); return { r: n >> 16, g: (n >> 8) & 255, b: n & 255, a: 1 }; } var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return null; var p = m[1].split(',').map(parseFloat); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
     var opaque = function (c) { var x = rgb(c); return x ? 'rgb(' + x.r + ',' + x.g + ',' + x.b + ')' : c; };
     var lum = function (c) { var x = rgb(c); if (!x) return 0; var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(x.r) + 0.7152 * f(x.g) + 0.0722 * f(x.b); };
     var contrast = function (a, b) { var l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
@@ -63,6 +63,7 @@
     if (!rgb(t.fBg) || rgb(t.fBg).a === 0) t.fBg = '#ffffff';
     t.fFg = bcs.color;
     if (contrast(t.fFg, t.fBg) < 4.5) { var fc = [hcs && hcs.color, '#141414', '#ffffff']; for (var fj = 0; fj < fc.length; fj++) { if (fc[fj] && contrast(fc[fj], t.fBg) >= 4.5) { t.fFg = fc[fj]; break; } } }
+    if (t.btnImg === 'none' && t.btnBg && contrast(t.btnFg, t.btnBg) < 3) { var bb = ['#141414', '#ffffff']; t.btnFg = contrast(bb[0], t.btnBg) >= contrast(bb[1], t.btnBg) ? bb[0] : bb[1]; }
     t.fBtnFg = t.ctaFg;
     if (t.ctaImg === 'none' && contrast(t.fBtnFg, t.ctaBg) < 3) { var fb = [t.fBg, '#ffffff', '#141414']; for (var fk = 0; fk < fb.length; fk++) { if (contrast(fb[fk], t.ctaBg) >= 3) { t.fBtnFg = fb[fk]; break; } } }
     if (!t.btnBg && t.btnImg === 'none') { t.btnBg = t.barFg; t.btnFg = t.barBg; }
