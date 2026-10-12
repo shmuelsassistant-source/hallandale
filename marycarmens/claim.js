@@ -58,6 +58,13 @@
       var cands = [ccs && ccs.color, btcs && btcs.color, hcs && hcs.color, bcs.color, '#141414', '#ffffff'];
       for (var ci = 0; ci < cands.length; ci++) { if (cands[ci] && contrast(cands[ci], t.barBg) >= 4.5) { t.barFg = cands[ci]; break; } }
     }
+    // floating desktop card: header/page palette, header call-button styling
+    t.fBg = opaque(hcs && solidBg(hcs.backgroundColor) ? hcs.backgroundColor : bcs.backgroundColor);
+    if (!rgb(t.fBg) || rgb(t.fBg).a === 0) t.fBg = '#ffffff';
+    t.fFg = bcs.color;
+    if (contrast(t.fFg, t.fBg) < 4.5) { var fc = [hcs && hcs.color, '#141414', '#ffffff']; for (var fj = 0; fj < fc.length; fj++) { if (fc[fj] && contrast(fc[fj], t.fBg) >= 4.5) { t.fFg = fc[fj]; break; } } }
+    t.fBtnFg = t.ctaFg;
+    if (t.ctaImg === 'none' && contrast(t.fBtnFg, t.ctaBg) < 3) { var fb = [t.fBg, '#ffffff', '#141414']; for (var fk = 0; fk < fb.length; fk++) { if (contrast(fb[fk], t.ctaBg) >= 3) { t.fBtnFg = fb[fk]; break; } } }
     if (!t.btnBg && t.btnImg === 'none') { t.btnBg = t.barFg; t.btnFg = t.barBg; }
     if (t.btnImg === 'none' && t.btnBg && contrast(t.btnBg, t.barBg) < 1.35) { t.btnBg = t.barFg; t.btnFg = t.barBg; t.btnImg = 'none'; }
 
@@ -85,7 +92,8 @@
       '.hbc-pill.hang i{background:currentColor;opacity:.7}' +
       '.hbc-pill.hang.on{opacity:1}' +
       '.hbc-pill.short .hbc-l{display:none}.hbc-pill.short .hbc-s{display:inline}' +
-      '.hbc-bar.hbc-float{width:auto;max-width:440px;padding:9px 9px 9px 18px;gap:14px}' +
+      '.hbc-bar.hbc-float{width:auto;max-width:440px;padding:9px 9px 9px 18px;gap:14px;background:' + t.fBg + ';color:' + t.fFg + ';border-radius:16px;border:1px solid rgba(127,127,127,.25)}' +
+      '.hbc-bar.hbc-float .hbc-go{background:' + t.ctaBg + ';background-image:' + t.ctaImg + ';color:' + t.fBtnFg + '}' +
       '@media (prefers-reduced-motion:reduce){.hbc-bar,.hbc-pill{transition:none}}';
     var st = document.createElement('style'); st.setAttribute('data-hb-claim', ''); st.textContent = css; document.head.appendChild(st);
 
