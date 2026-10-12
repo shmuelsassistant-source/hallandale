@@ -3,7 +3,9 @@
      data-enabled="false"  -> nothing renders (the site looks exactly as before)
      data-enabled="true"   -> bar shows for everyone (needs data-pay)
      data-pay="https://pay.mrsalesforce.com/<id>"
-   Preview without enabling: add ?claim=1 to the URL. */
+   Preview without enabling: add ?claim=1 to the URL.
+   Optional: data-header / data-dock = CSS selectors when auto-detection misses.
+   Desktop: pill in the header where it fits, else a small floating card bottom-right. */
 (function () {
   var me = document.currentScript || document.querySelector('script[data-claim]');
   if (!me) return;
@@ -15,11 +17,18 @@
   try { if (sessionStorage.getItem('hbClaimHidden') === '1' && !preview) return; } catch (e) {}
 
   function start() {
-    var header = document.querySelector('header.nav, #nav');
-    var dock = document.querySelector(cfg.dock || '.mbar, .dock, .sticky-bar');
-    var cta = header && header.lastElementChild && header.lastElementChild.tagName === 'A' ? header.lastElementChild : (header && header.querySelector('a.btn:last-of-type'));
-    var navEl = header && header.querySelector('nav');
     var cs = function (el) { return el ? getComputedStyle(el) : null; };
+    var isVis = function (el) { if (!el || !el.isConnected) return false; var s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return false; var r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    var header = (cfg.header && document.querySelector(cfg.header)) || document.querySelector('header.nav, #nav, header#top, body > header, header');
+    var dock = (cfg.dock && document.querySelector(cfg.dock)) || document.querySelector('.mbar, .dock, .sticky-bar, .sticky, .bar');
+    if (!dock) { var fx = document.querySelectorAll('body > div, body > nav, body > aside'); for (var fi = 0; fi < fx.length; fi++) { var fs = getComputedStyle(fx[fi]); if (fs.position === 'fixed' && parseFloat(fs.bottom) < 40 && fx[fi].querySelector('a[href^="tel:"]')) { dock = fx[fi]; break; } } }
+    var cta = null;
+    if (header) {
+      var hl = header.querySelectorAll('a[href^="tel:"], a.btn, a.cta, a[class*="call"]');
+      for (var hi = 0; hi < hl.length; hi++) { if (!cta || hl[hi].getBoundingClientRect().right > cta.getBoundingClientRect().right) cta = hl[hi]; }
+      if (!cta && header.lastElementChild && header.lastElementChild.tagName === 'A') cta = header.lastElementChild;
+    }
+    var navEl = header && header.querySelector('nav');
     var solidBg = function (c) { var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return false; var p = m[1].split(','); return p.length < 4 || parseFloat(p[3]) > 0.35; };
 
     var rgb = function (c) { var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return null; var p = m[1].split(',').map(parseFloat); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
@@ -76,6 +85,7 @@
       '.hbc-pill.hang i{background:currentColor;opacity:.7}' +
       '.hbc-pill.hang.on{opacity:1}' +
       '.hbc-pill.short .hbc-l{display:none}.hbc-pill.short .hbc-s{display:inline}' +
+      '.hbc-bar.hbc-float{width:auto;max-width:440px;padding:9px 9px 9px 18px;gap:14px}' +
       '@media (prefers-reduced-motion:reduce){.hbc-bar,.hbc-pill{transition:none}}';
     var st = document.createElement('style'); st.setAttribute('data-hb-claim', ''); st.textContent = css; document.head.appendChild(st);
 
@@ -110,6 +120,10 @@
     var basePadPx = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
     var raf = 0;
     function visible(el) { if (!el || !el.isConnected) return false; var s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden') return false; var r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
+    function floatCard() {
+      bar.classList.add('hbc-float'); bar.style.left = 'auto'; bar.style.right = '24px'; bar.style.bottom = '24px'; bar.style.width = '';
+      bar.style.display = ''; bar.classList.add('on');
+    }
     function layout() {
       raf = 0;
       if (!bar.isConnected) return;
@@ -119,26 +133,25 @@
         bar.style.left = Math.max(8, r.left) + 'px';
         bar.style.width = Math.min(window.innerWidth - 16, r.width) + 'px';
         bar.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
+        bar.classList.remove('hbc-float'); bar.style.right = '';
         bar.style.display = ''; bar.classList.add('on');
         if (pill) pill.classList.remove('on');
         document.body.style.paddingBottom = (basePadPx + bar.offsetHeight + 10) + 'px';
         return;
       }
-      bar.classList.remove('on'); bar.style.display = 'none';
+      bar.classList.remove('on', 'hbc-float'); bar.style.display = 'none';
       document.body.style.paddingBottom = basePad;
-      if (!pill) return;
+      if (!pill || !visible(header)) { if (pill) { pill.classList.remove('on'); pill.style.display = 'none'; } floatCard(); return; }
       // place the pill just left of the header's call button, only where there is clear room
       var hr = header.getBoundingClientRect(), cr = visible(cta) ? cta.getBoundingClientRect() : null;
       var rightEdge = cr ? cr.left - 14 : hr.right - 24;
-      var leftLimit = 0, kids = header.children;
-      for (var i = 0; i < kids.length; i++) { var k = kids[i]; if (k === pill || k === cta || !visible(k)) continue; var kr = k.getBoundingClientRect(); if (kr.right < rightEdge) leftLimit = Math.max(leftLimit, kr.right); }
-      if (navEl && visible(navEl)) { var as = navEl.querySelectorAll('a'); for (var j = 0; j < as.length; j++) { var ar = as[j].getBoundingClientRect(); if (ar.width && ar.right < rightEdge + 1) leftLimit = Math.max(leftLimit, ar.right); } }
+      var leftLimit = hr.left, ds = header.querySelectorAll('a, button, img, svg, h1, h2, strong, b, span, div, nav, ul');
+      for (var i = 0; i < ds.length; i++) { var k = ds[i]; if (k === pill || pill.contains(k) || k === cta || (cta && (cta.contains(k) || k.contains(cta))) || !visible(k)) continue; var kr = k.getBoundingClientRect(); if (kr.width >= hr.width * 0.9) continue; if (kr.right < rightEdge + 1) leftLimit = Math.max(leftLimit, kr.right); }
       pill.style.right = (hr.right - rightEdge) + 'px';
-      pill.classList.remove('short');
+      pill.classList.remove('short'); pill.style.display = '';
       var room = rightEdge - leftLimit - 20;
       if (pill.offsetWidth > room) pill.classList.add('short');
-      pill.classList.remove('hang');
-      if (pill.offsetWidth > room) { pill.classList.remove('short'); pill.classList.add('hang'); pill.style.right = (hr.right - (cr ? cr.right : hr.right - 24)) + 'px'; }
+      if (pill.offsetWidth > room) { pill.classList.remove('on'); pill.style.display = 'none'; floatCard(); return; }
       pill.style.visibility = ''; pill.classList.add('on');
     }
     function q() { if (!raf) raf = requestAnimationFrame(layout); }
